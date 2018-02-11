@@ -72,13 +72,13 @@ impl EventClass {
 /// A field in a tracing event
 pub struct Field {
     ctf_type: CTFType,
-    field_name: String,
+    name: String,
 }
 
 impl Field {
-    fn new(field_name: String, ctf_type: CTFType) -> Self {
+    fn new(name: String, ctf_type: CTFType) -> Self {
         Self {
-            ctf_type, field_name,
+            ctf_type, name,
         }
     }
 }
@@ -130,17 +130,57 @@ pub enum LogLevel {
 }
 
 /// Represents a C integer type
+#[derive(Copy,Clone,PartialEq,Eq,Debug)]
 pub enum CIntegerType {
     I8, I16, I32, I64,
     U8, U16, U32, U64,
 }
 
+impl CIntegerType {
+    fn c_type(&self) -> &'static str {
+        match *self {
+            CIntegerType::I8 =>   "int8_t",
+            CIntegerType::U8 =>  "uint8_t",
+            CIntegerType::I16 =>  "int16_t",
+            CIntegerType::U16 => "uint16_t",
+            CIntegerType::I32 =>  "int32_t",
+            CIntegerType::U32 => "uint32_t",
+            CIntegerType::I64 =>  "int64_t",
+            CIntegerType::U64 => "uint64_t"
+        }
+    }
+
+    fn c_pointer_type(&self) -> &'static str {
+        match *self {
+            CIntegerType::I8 =>   "int8_t *",
+            CIntegerType::U8 =>  "uint8_t *",
+            CIntegerType::I16 =>  "int16_t *",
+            CIntegerType::U16 => "uint16_t *",
+            CIntegerType::I32 =>  "int32_t *",
+            CIntegerType::U32 => "uint32_t *",
+            CIntegerType::I64 =>  "int64_t *",
+            CIntegerType::U64 => "uint64_t *"
+        }
+    }
+}
+
 /// Represents a C float type
+#[derive(Copy,Clone,PartialEq,Eq,Debug)]
 pub enum CFloatType {
     Single, Double
 }
 
+impl CFloatType {
+    fn c_type(&self) -> &'static str {
+        match *self {
+            CFloatType::Single => "float",
+            CFloatType::Double => "double",
+        }
+    }
+}
+
 /// Represents a CTF type
+#[derive(Copy,Clone,PartialEq,Eq,Debug)]
 pub enum CTFType {
     /// A standard base-10 integer.
     /// Maps to `ctf_integer`.
@@ -167,21 +207,26 @@ pub enum CTFType {
     FloatNoWrite(CFloatType),
     /// A null-terminated string.
     /// Unless you're working with already-terminated `OsStrings`, you probably want to use a
-    /// [Text](CTFType::Text) instead.
+    /// [SequenceText](CTFType::SequenceText) or [ArrayText](CTFType::ArrayText) instead.
     /// Maps to `ctf_string`.
     String,
     /// A null-terminated string which is available to event filters, but is not persisted.
     /// Unless you're working with already-terminated `OsStrings`, you probably want to use a
-    /// [TextNoWrite](CTFType::TextNoWrite) instead.
+    /// [SequenceTextNoWrite](CTFType::SequenceTextNoWrite) instead.
     /// Maps to `ctf_string_nowrite`.
     StringNoWrite,
     /// A statically sized array of integers
     /// Maps to `ctf_array`.
     Array(CIntegerType, i32),
+    /// A statically sized array of integers
+    /// Maps to `ctf_array_text`.
+    ArrayText(i32),
     /// A statically sized array of integers which is available to event filters, but is not
     /// persisted.
     /// Maps to `ctf_array_nowrite`.
     ArrayNoWrite(CIntegerType, i32),
+    /* Things to add later: */
+    // ArrayNetwork{NoWrite,Hex,NoWriteHex}, ArrayTextNoWrite
     /// Dynamically sized array of integers
     /// Maps to `ctf_sequence`.
     Sequence(CIntegerType),
@@ -189,12 +234,14 @@ pub enum CTFType {
     /// persisted.
     /// Maps to `ctf_sequence_nowrite`.
     SequenceNoWrite(CIntegerType),
+    /* Things to add later */
+    // SequenceHex, SequenceHexNoWrite, SequenceNetwork{,NoWrite,Hex,NoWriteHex}
     /// Dynamically-sized array, displayed as text
     /// Maps to `ctf_sequence_text`.
-    Text,
+    SequenceText,
     /// Dynamically-sized array, displayed as text, but is not persisted.
     /// Maps to `ctf_sequence_text_nowrite`.
-    TextNoWrite,
+    SequenceTextNoWrite,
     /// Enumeration value.
     /// TODO: some sort of proc-macro skulduggery is probably required here.
     /// Maps to `ctf_enum`.
@@ -203,6 +250,18 @@ pub enum CTFType {
     /// TODO: some sort of proc-macro skulduggery is probably required here.
     /// Maps to `ctf_enum_nowrite`.
     EnumNoWrite,
+}
+
+impl CTFType {
+    fn is_sequence(&self) -> bool {
+        match *self {
+            CTFType::Sequence(_) |
+            CTFType::SequenceNoWrite(_) |
+            CTFType::SequenceText |
+            CTFType::SequenceTextNoWrite => true,
+            _ => false,
+        }
+    }
 }
 
 #[cfg(test)]
