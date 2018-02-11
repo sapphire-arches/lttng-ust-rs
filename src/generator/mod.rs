@@ -54,6 +54,9 @@ impl Generator {
     }
 
     fn generate_sources(&self, generate_path: &PathBuf) {
+        use std::fs;
+        fs::create_dir_all(generate_path)
+            .expect("Failed to create source directory");
         let tp_hdr_pth = &self.tracepoint_header(&generate_path);
         let in_hdr_pth = &self.interface_header(&generate_path);
         generate_tp_header(tp_hdr_pth, &self.providers)

@@ -39,6 +39,7 @@ fn generate_provider<F: Write>(provider: &Provider, outf: &mut F) -> io::Result<
     write!(outf, "#define TRACEPOINT_PROVIDER {}\n\n", provider.name)?;
     write!(outf, "#include <lttng/tracepoint.h>\n\n")?;
     write!(outf, "#include <stdint.h>\n")?;
+    write!(outf, "#include <stddef.h>\n")?;
 
     for event_class in &provider.classes {
         write!(outf, "TRACEPOINT_EVENT_CLASS(\n")?;
@@ -93,7 +94,7 @@ fn generate_tp_args<F: Write>(fields: &[Field], outf: &mut F) -> io::Result<()> 
                field.name)?;
         if field.ctf_type.is_sequence() {
             // TODO: actually pick a reasonably type here instead of using int
-            write!(outf, ",\n        int, {}_len", field.name)?;
+            write!(outf, ",\n        size_t, {}_len", field.name)?;
         }
     }
     write!(outf, "\n    )")
@@ -126,13 +127,13 @@ fn generate_ctf_call<F: Write>(field: &Field, outf: &mut F) -> io::Result<()> {
         CTFType::ArrayNoWrite(i, l) =>
             write!(outf, "ctf_array_nowrite({0}, {1}, {1}_arg, {2})", i.c_type(), field.name, l),
         CTFType::Sequence(i) =>
-            write!(outf, "ctf_sequence({0}, {1}, {1}_arg, int, {1}_len)", i.c_type(), field.name),
+            write!(outf, "ctf_sequence({0}, {1}, {1}_arg, size_t, {1}_len)", i.c_type(), field.name),
         CTFType::SequenceNoWrite(i) =>
-            write!(outf, "ctf_sequence({0}, {1}, {1}_arg, int, {1}_len)", i.c_type(), field.name),
+            write!(outf, "ctf_sequence({0}, {1}, {1}_arg, size_t, {1}_len)", i.c_type(), field.name),
         CTFType::SequenceText =>
-            write!(outf, "ctf_sequence_text(char, {0}, {0}_arg, int, {0}_len)", field.name),
+            write!(outf, "ctf_sequence_text(char, {0}, {0}_arg, size_t, {0}_len)", field.name),
         CTFType::SequenceTextNoWrite =>
-            write!(outf, "ctf_sequence_text_nowrite(char, {0}, {0}_arg, int, {0}_len)", field.name),
+            write!(outf, "ctf_sequence_text_nowrite(char, {0}, {0}_arg, size_t, {0}_len)", field.name),
         CTFType::Enum | CTFType::EnumNoWrite => unimplemented!(),
     }
 }

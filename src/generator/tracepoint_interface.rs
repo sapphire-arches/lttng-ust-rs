@@ -30,6 +30,7 @@ pub(in super) fn generate_interface_header(path: &PathBuf, providers: &[Provider
     write!(outf, "#if !defined(_RUST_TRACEPOINT_INTERFACE)\n")?;
     write!(outf, "#define _RUST_TRACEPOINT_INTERFACE\n")?;
     write!(outf, "#include <stdint.h>\n")?;
+    write!(outf, "#include <stddef.h>\n")?;
 
     for provider in providers {
         generate_provider_header(provider, &mut outf)?;
@@ -94,12 +95,12 @@ fn generate_c_args<F: Write>(fields: &[Field], outf: &mut F, include_type: bool)
                 field.name
             )?;
             if field.ctf_type.is_sequence() {
-                write!(outf, ", int {}_len", field.name);
+                write!(outf, ", size_t {}_len", field.name)?;
             }
         } else {
             write!(outf, "{}_arg", field.name)?;
             if field.ctf_type.is_sequence() {
-                write!(outf, ", {}_len", field.name);
+                write!(outf, ", {}_len", field.name)?;
             }
         }
     }
