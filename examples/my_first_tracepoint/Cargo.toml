@@ -1,0 +1,9 @@
+[package]
+name = "my_first_tracepoint"
+version = "0.1.0"
+authors = ["bobtwinkles <srkoser+GitHub@gmail.com>"]
+
+[dependencies]
+
+[build-dependencies]
+lttng-ust = { path = "../../" }
