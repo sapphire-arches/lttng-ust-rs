@@ -6,4 +6,4 @@ authors = ["bobtwinkles <srkoser+GitHub@gmail.com>"]
 [dependencies]
 
 [build-dependencies]
-lttng-ust = { path = "../../" }
+lttng-ust-generate = { path = "../../lttng-ust-generate" }

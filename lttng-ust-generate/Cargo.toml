@@ -1,5 +1,5 @@
 [package]
-name = "lttng-ust"
+name = "lttng-ust-generate"
 version = "0.1.0"
 authors = ["Reed Koser <srkoser+GitHub@gmail.com>"]
 description = "Semi-automatically generate lttng-ust tracepoints"

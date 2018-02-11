@@ -1,6 +1,6 @@
 #![feature(nll)]
 
-extern crate lttng_ust;
+extern crate lttng_ust_generate as lttng_ust;
 
 use std::env;
 use std::path::PathBuf;
