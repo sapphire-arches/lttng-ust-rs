@@ -1,5 +1,4 @@
-
-use bindgen::{Builder, Bindings};
+use bindgen::Builder;
 use cc;
 use std::env;
 use std::path::PathBuf;
@@ -14,13 +13,16 @@ use self::tracepoint_interface::{generate_interface_impl, generate_interface_hea
 pub struct Generator {
     lib_name: String,
     providers: Vec<Provider>,
+    output_file_name: PathBuf,
 }
 
 impl Default for Generator {
     fn default() -> Self {
+        let generate_path = PathBuf::from(env::var("OUT_DIR").unwrap());
         Self {
             lib_name: "tracepoints".into(),
-            providers: Vec::new()
+            providers: Vec::new(),
+            output_file_name: generate_path.join("tracepoints.rs"),
         }
     }
 }
@@ -38,25 +40,42 @@ impl Generator {
         self
     }
 
+    pub fn output_file_name<P: Into<PathBuf>>(mut self, p: P) -> Self {
+        self.output_file_name = p.into();
+        self
+    }
+
     /// Perform generation. Hands back a bindgen Bindings object that has been mostly set up for
     /// you, but you will need to call [`write_to_file`][bindgen::Bindings::write_to_file] to
     /// actually generate the bindings.
-    pub fn generate(self) -> Result<Bindings, ()> {
+    pub fn generate(self) -> Result<(), ()> {
+        // TODO: replace expects with something that passes errors upward
         let mut generate_path = PathBuf::from(env::var("OUT_DIR").unwrap());
         generate_path.push("lttng-tracepoints");
+        generate_path.push(&self.lib_name);
 
-        self.generate_sources(&generate_path);
+        self.generate_c_sources(&generate_path);
 
         let builder = Builder::default();
-        builder
+        let bindings = builder
             .header(self.interface_header(&generate_path).to_string_lossy())
             .generate()
+            .expect(&format!("Failed to generate tracepoint bindings for {}", self.lib_name));
+
+        bindings
+            .write_to_file(&self.output_file_name)
+            .expect(&format!("Failed to write raw tracepoint bindings for {}", self.lib_name));
+
+        Ok(())
     }
 
-    fn generate_sources(&self, generate_path: &PathBuf) {
+    fn generate_c_sources(&self, generate_path: &PathBuf) {
         use std::fs;
+        // Make sure the output directory exists
         fs::create_dir_all(generate_path)
             .expect("Failed to create source directory");
+
+        // Generate and build C-language files
         let tp_hdr_pth = &self.tracepoint_header(&generate_path);
         let in_hdr_pth = &self.interface_header(&generate_path);
         generate_tp_header(tp_hdr_pth, &self.providers)
@@ -76,7 +95,9 @@ impl Generator {
         cc::Build::new()
             .files(&impl_paths)
             .include(generate_path)
-            .compile(&self.lib_name)
+            .compile(&self.lib_name);
+
+
     }
 
     fn tracepoint_header(&self, generate_path: &PathBuf) -> PathBuf {
@@ -88,9 +109,7 @@ impl Generator {
     }
 
     fn local_path(&self, generate_path: &PathBuf, suffix: &str) -> PathBuf {
-        let mut path = generate_path.clone();
-        path.push(format!("{}{}", self.lib_name, suffix));
-        path
+        generate_path.join(format!("{}{}", self.lib_name, suffix))
     }
 }
 

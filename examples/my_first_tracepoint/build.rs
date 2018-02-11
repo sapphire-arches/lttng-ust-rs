@@ -23,16 +23,13 @@ fn main() {
 
     // Generate the tracepoint sources
     let tp_lib = "hello_world_tracepoints";
-    let tracepoints = lttng_ust::Generator::default()
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    lttng_ust::Generator::default()
         .generated_lib_name(tp_lib)
         .register_provider(provider)
+        .output_file_name(out_path.join("tracepoints.rs"))
         .generate()
-        .expect("Unable to generate bindings");
-
-    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
-    tracepoints
-        .write_to_file(out_path.join("tracepoints.rs"))
-        .expect("Couldn't write tracepoint bindings");
+        .expect("Unable to generate tracepoint bindings");
 
     // Note: this MUST be after all tracepoints are generated so that the linker
     // doesn't get confused
