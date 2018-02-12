@@ -286,11 +286,3 @@ impl CTFType {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(add_numbers(2, 3), 5);
-    }
-}
