@@ -19,5 +19,5 @@ fn main() {
     println!("Hello, world!");
 
     wait_for_enter();
-    tracepoints::hello_world::class1::my_first_tracepoint(26, "hello world");
+    tracepoints::hello_world::my_first_tracepoint(26, "hello world");
 }

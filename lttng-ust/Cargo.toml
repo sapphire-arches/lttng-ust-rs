@@ -1,0 +1,9 @@
+[package]
+name = "lttng-ust"
+version = "0.1.0"
+authors = ["Reed Koser <srkoser+GitHub@gmail.com>"]
+description = "Semi-automatically generate lttng-ust tracepoints (client code)"
+categories = [ "external-ffi-bindings", "development-tools::ffi", "development-tools::tracing"]
+readme = "README.md"
+
+[dependencies]
