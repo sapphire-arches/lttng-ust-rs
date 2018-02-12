@@ -4,6 +4,7 @@ version = "0.1.0"
 authors = ["bobtwinkles <srkoser+GitHub@gmail.com>"]
 
 [dependencies]
+lttng-ust = { path = "../../lttng-ust" }
 
 [build-dependencies]
 lttng-ust-generate = { path = "../../lttng-ust-generate" }

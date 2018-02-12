@@ -6,9 +6,11 @@ use super::{CTFType, Provider};
 
 mod tracepoint_impl;
 mod tracepoint_interface;
+mod rust_bindings;
 
 use self::tracepoint_impl::{generate_tp_impl, generate_tp_header};
-use self::tracepoint_interface::{generate_interface_impl, generate_interface_header};
+use self::tracepoint_interface::{generate_interface_impl, generate_interface_header, whitelist_interface};
+use self::rust_bindings::{generate_rust_bindings};
 
 pub struct Generator {
     lib_name: String,
@@ -45,26 +47,31 @@ impl Generator {
         self
     }
 
-    /// Perform generation. Hands back a bindgen Bindings object that has been mostly set up for
-    /// you, but you will need to call [`write_to_file`][bindgen::Bindings::write_to_file] to
-    /// actually generate the bindings.
+    /// Perform generation.
     pub fn generate(self) -> Result<(), ()> {
         // TODO: replace expects with something that passes errors upward
         let mut generate_path = PathBuf::from(env::var("OUT_DIR").unwrap());
         generate_path.push("lttng-tracepoints");
         generate_path.push(&self.lib_name);
 
+        let mut builder = Builder::default();
+        builder = builder.header(self.interface_header(&generate_path).to_string_lossy());
+
+        // Generate C modules
         self.generate_c_sources(&generate_path);
+        builder = whitelist_interface(&self.providers, builder);
 
-        let builder = Builder::default();
-        let bindings = builder
-            .header(self.interface_header(&generate_path).to_string_lossy())
+        // Parse C modules and generate unsafe Rust bindings for the interface
+        let bindings_file = generate_path.join("tracepoints.rs");
+        builder
             .generate()
-            .expect(&format!("Failed to generate tracepoint bindings for {}", self.lib_name));
-
-        bindings
-            .write_to_file(&self.output_file_name)
+            .expect(&format!("Failed to generate tracepoint bindings for {}", self.lib_name))
+            .write_to_file(&bindings_file)
             .expect(&format!("Failed to write raw tracepoint bindings for {}", self.lib_name));
+
+        // Generate pretty rust module
+        generate_rust_bindings(&self.output_file_name, &self.providers, &bindings_file)
+            .expect("Failed to generate rust sources");
 
         Ok(())
     }
@@ -96,8 +103,6 @@ impl Generator {
             .files(&impl_paths)
             .include(generate_path)
             .compile(&self.lib_name);
-
-
     }
 
     fn tracepoint_header(&self, generate_path: &PathBuf) -> PathBuf {
@@ -124,11 +129,11 @@ fn ctf_field_c_type(ty: CTFType) -> &'static str {
         CTFType::Float(f) |
         CTFType::FloatNoWrite(f) => f.c_type(),
 
-        CTFType::String | CTFType::StringNoWrite => "char *",
+        CTFType::String | CTFType::StringNoWrite => "const char *",
         CTFType::Array(i, _) | CTFType::ArrayNoWrite(i, _) => i.c_pointer_type(),
-        CTFType::ArrayText(_) => "char *",
+        CTFType::ArrayText(_) => "const char *",
         CTFType::Sequence(i) | CTFType::SequenceNoWrite(i) => i.c_pointer_type(),
-        CTFType::SequenceText | CTFType::SequenceTextNoWrite => "char *",
+        CTFType::SequenceText | CTFType::SequenceTextNoWrite => "const char *",
         CTFType::Enum | CTFType::EnumNoWrite => unimplemented!(),
     }
 }

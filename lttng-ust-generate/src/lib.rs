@@ -2,6 +2,8 @@
 
 extern crate bindgen;
 extern crate cc;
+#[macro_use]
+extern crate quote;
 
 pub mod generator;
 
@@ -162,6 +164,19 @@ impl CIntegerType {
             CIntegerType::U64 => "uint64_t *"
         }
     }
+
+    fn rust_type(&self) -> &'static str {
+        match *self {
+            CIntegerType::I8 => "i8",
+            CIntegerType::U8 => "u8",
+            CIntegerType::I16 => "i16",
+            CIntegerType::U16 => "u16",
+            CIntegerType::I32 => "i32",
+            CIntegerType::U32 => "u32",
+            CIntegerType::I64 => "i64",
+            CIntegerType::U64 => "u64",
+        }
+    }
 }
 
 /// Represents a C float type
@@ -177,10 +192,18 @@ impl CFloatType {
             CFloatType::Double => "double",
         }
     }
+
+    fn rust_type(&self) -> &'static str {
+        match *self {
+            CFloatType::Single => "f32",
+            CFloatType::Double => "f64",
+        }
+    }
 }
 
 /// Represents a CTF type
 #[derive(Copy,Clone,PartialEq,Eq,Debug)]
+
 pub enum CTFType {
     /// A standard base-10 integer.
     /// Maps to `ctf_integer`.

@@ -54,6 +54,7 @@ fn generate_provider<F: Write>(provider: &Provider, outf: &mut F) -> io::Result<
             write!(outf, "    {},\n", instance.name)?;
             generate_tp_args(&event_class.fields, outf)?;
             write!(outf, "\n)\n\n")?;
+            // TODO: emit TRACEPOINT_LOGLEVEL
         }
     }
 
