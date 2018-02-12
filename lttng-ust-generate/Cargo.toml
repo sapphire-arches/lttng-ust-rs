@@ -5,6 +5,7 @@ authors = ["Reed Koser <srkoser+GitHub@gmail.com>"]
 description = "Semi-automatically generate lttng-ust tracepoints (generation code)"
 categories = [ "external-ffi-bindings", "development-tools::ffi", "development-tools::tracing"]
 readme = "README.md"
+repository = "https://github.com/bobtwinkles/lttng-ust-rs/"
 
 [dependencies]
 bindgen = "0.32.3"
