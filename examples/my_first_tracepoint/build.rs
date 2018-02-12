@@ -7,31 +7,40 @@ use std::path::PathBuf;
 use lttng_ust::{CTFType, CIntegerType};
 
 fn main() {
-    // Create a provider and some tracepoints
+    // Create a provider name "hello_world"
     let mut provider = lttng_ust::Provider::new("hello_world");
 
+    // Create an event layout
     let ev_class1 = provider.create_class("class1");
     ev_class1
         .add_field("my_integer_field", CTFType::Integer(CIntegerType::I32))
-        .add_field("my_string_field", CTFType::SequenceText)
-        .instantiate("my_first_tracepoint");
+        .add_field("my_string_field", CTFType::SequenceText);
 
-    let ev_class2 = provider.create_class("class2".to_string());
-    ev_class2
-        .add_field("int_field_2", CTFType::Integer(CIntegerType::U32))
-        .add_field("native_string", CTFType::String);
+    // Instantiate that layout to get an actual tracepoint
+    ev_class1.instantiate("my_first_tracepoint");
 
     // Generate the tracepoint sources
     let tp_lib = "hello_world_tracepoints";
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     lttng_ust::Generator::default()
+        // Sets the name of the generated static library file. This is important
+        // if for whatever reason there's already a library name "tracepoints"
+        // being linked.
         .generated_lib_name(tp_lib)
-        .register_provider(provider)
+        // Set the filename where we should write tracepoint code to.
         .output_file_name(out_path.join("tracepoints.rs"))
+        // Registers our provider with the generator so it will actually generate.
+        // Registering a provider implicitly registers all event classes created
+        // from it which in turn registers all instantiated tracepoints.
+        .register_provider(provider)
+        // Perform the generation
         .generate()
+        // ... and error out if we can't generate the bindings.
         .expect("Unable to generate tracepoint bindings");
 
     // Note: this MUST be after all tracepoints are generated so that the linker
-    // doesn't get confused
+    // doesn't get confused. Generator::generate uses cc-rs under the hood to build
+    // and link a static C library which needs to precede lttng-ust in the linker
+    // command line.
     println!("cargo:rustc-link-lib=lttng-ust");
 }

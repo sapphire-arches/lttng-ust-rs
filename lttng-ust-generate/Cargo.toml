@@ -9,4 +9,3 @@ readme = "README.md"
 [dependencies]
 bindgen = "0.32.3"
 cc = "1.0"
-quote = "0.4.2"

@@ -12,6 +12,8 @@ use self::tracepoint_impl::{generate_tp_impl, generate_tp_header};
 use self::tracepoint_interface::{generate_interface_impl, generate_interface_header, whitelist_interface};
 use self::rust_bindings::{generate_rust_bindings};
 
+/// Encapsulates the logic for generating the C and Rust source files needed to realize your
+/// tracepoints
 pub struct Generator {
     lib_name: String,
     providers: Vec<Provider>,
@@ -42,6 +44,8 @@ impl Generator {
         self
     }
 
+    /// Sets the name of the root Rust source file into which tracepoint bindings
+    /// are generated.
     pub fn output_file_name<P: Into<PathBuf>>(mut self, p: P) -> Self {
         self.output_file_name = p.into();
         self
