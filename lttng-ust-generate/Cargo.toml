@@ -1,6 +1,6 @@
 [package]
 name = "lttng-ust-generate"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Reed Koser <srkoser+GitHub@gmail.com>"]
 description = "Semi-automatically generate lttng-ust tracepoints (generation code)"
 categories = [ "external-ffi-bindings", "development-tools::ffi", "development-tools::profiling"]

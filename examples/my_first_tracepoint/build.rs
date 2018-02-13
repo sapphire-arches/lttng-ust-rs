@@ -37,10 +37,4 @@ fn main() {
         .generate()
         // ... and error out if we can't generate the bindings.
         .expect("Unable to generate tracepoint bindings");
-
-    // Note: this MUST be after all tracepoints are generated so that the linker
-    // doesn't get confused. Generator::generate uses cc-rs under the hood to build
-    // and link a static C library which needs to precede lttng-ust in the linker
-    // command line.
-    println!("cargo:rustc-link-lib=lttng-ust");
 }

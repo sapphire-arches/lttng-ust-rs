@@ -144,8 +144,19 @@ impl EventClass {
     pub fn instantiate<S: Into<String>>(&mut self, instance_name: S) -> &mut Self {
         // TODO: make sure instance names don't conflict.
         // This gets tricky because we can't conflict with any name in the parent provider's namespace.
+        self.instantiate_with_level(instance_name, LogLevel::DebugLine)
+    }
+
+    /// Instantiate the class, creating a new tracepoint.
+    /// Also allows specification of the level
+    pub fn instantiate_with_level<S: Into<String>>(&mut self,
+                                                   instance_name: S,
+                                                   level: LogLevel) -> &mut Self {
+        // TODO: make sure instance names don't conflict.
+        // This gets tricky because we can't conflict with any name in the parent provider's namespace.
         self.instances.push(EventInstance::new(
-            instance_name.into()
+            instance_name.into(),
+            level
         ));
         self
     }
@@ -169,12 +180,13 @@ impl Field {
 /// Every `EventInstance` represents a new tracepoint in the final binary
 pub struct EventInstance {
     name: String,
+    level: LogLevel,
 }
 
 impl EventInstance {
-    fn new(name: String) -> Self {
+    fn new(name: String, level: LogLevel) -> Self {
         EventInstance {
-            name,
+            name, level,
         }
     }
 }
@@ -211,6 +223,29 @@ pub enum LogLevel {
     DebugLine,
     /// Corresponds to the `TRACE_DEBUG` log level
     Debug
+}
+
+impl LogLevel {
+    fn lttng_level(&self) -> &'static str {
+        use LogLevel::*;
+        match *self {
+            Emergency => "TRACE_EMERG",
+            Alert => "TRACE_ALERT",
+            Critical => "TRACE_CRIT",
+            Error => "TRACE_ERR",
+            Warning => "TRACE_WARNING",
+            Notice => "TRACE_NOTICE",
+            Info => "TRACE_INFO",
+            DebugSystem => "TRACE_DEBUG_SYSTEM",
+            DebugProgram => "TRACE_DEBUG_PROGRAM",
+            DebugProcess => "TRACE_DEBUG_PROCESS",
+            DebugModule => "TRACE_DEBUG_MODULE",
+            DebugUnit => "TRACE_DEBUG_UNIT",
+            DebugFunction => "TRACE_DEBUG_FUNCTION",
+            DebugLine => "TRACE_DEBUG_LINE",
+            Debug => "TRACE_DEBUG",
+        }
+    }
 }
 
 /// Represents a C integer type
