@@ -3,10 +3,13 @@ extern crate lttng_ust_logging;
 extern crate log;
 
 fn main() {
+    // Initialize the logger
     lttng_ust_logging::init();
 
+    // Give the user a change to list out tracepoints
     wait_for_enter();
 
+    // Print some example texts
     trace!("Hello from trace");
     debug!("Hello from debug");
     info!("Hello from info");
