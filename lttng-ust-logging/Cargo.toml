@@ -1,0 +1,16 @@
+[package]
+name = "lttng-ust-logging"
+version = "0.1.0"
+authors = ["Reed Koser <srkoser+GitHub@gmail.com>"]
+description = "Log to lttng-ust from the log create"
+categories = [ "development-tools::debugging", "development-tools::profiling"]
+readme = "README.md"
+license = "MIT"
+build = "build.rs"
+
+[dependencies]
+lttng-ust = { path = "../lttng-ust" }
+log = "0.4"
+
+[build-dependencies]
+lttng-ust-generate = { path = "../lttng-ust-generate" }

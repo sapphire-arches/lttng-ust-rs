@@ -1,0 +1,8 @@
+[package]
+name = "logging"
+version = "0.1.0"
+authors = ["bobtwinkles <srkoser+GitHub@gmail.com>"]
+
+[dependencies]
+lttng-ust-logging = { path = "../../lttng-ust-logging" }
+log = "0.4"
