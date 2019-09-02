@@ -274,14 +274,14 @@ impl CIntegerType {
     /// String version of the C type this represents as a pointer
     fn c_pointer_type(&self) -> &'static str {
         match *self {
-            CIntegerType::I8 =>   "int8_t *",
-            CIntegerType::U8 =>  "uint8_t *",
-            CIntegerType::I16 =>  "int16_t *",
-            CIntegerType::U16 => "uint16_t *",
-            CIntegerType::I32 =>  "int32_t *",
-            CIntegerType::U32 => "uint32_t *",
-            CIntegerType::I64 =>  "int64_t *",
-            CIntegerType::U64 => "uint64_t *"
+            CIntegerType::I8 =>   "const int8_t *",
+            CIntegerType::U8 =>  "const uint8_t *",
+            CIntegerType::I16 =>  "const int16_t *",
+            CIntegerType::U16 => "const uint16_t *",
+            CIntegerType::I32 =>  "const int32_t *",
+            CIntegerType::U32 => "const uint32_t *",
+            CIntegerType::I64 =>  "const int64_t *",
+            CIntegerType::U64 => "const uint64_t *"
         }
     }
 
