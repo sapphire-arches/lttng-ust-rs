@@ -101,6 +101,8 @@ fn c_arg_for_field(base_name: String, field: &Field) -> String {
         format!("::std::mem::transmute({0}.as_bytes().as_ptr()), {0}.len()", base_name)
     } else if field.ctf_type.is_sequence() {
         base_name.clone() + ", " + &base_name + ".len()"
+    } else if let CTFType::Array(_, _) | CTFType::ArrayNoWrite(_, _) = field.ctf_type {
+        format!("{}.as_ptr()", base_name)
     } else {
         base_name
     }

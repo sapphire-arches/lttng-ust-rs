@@ -9,5 +9,5 @@ license = "MIT"
 repository = "https://github.com/bobtwinkles/lttng-ust-rs/"
 
 [dependencies]
-bindgen = "0.32.3"
+bindgen = "0.51"
 cc = "1.0"
