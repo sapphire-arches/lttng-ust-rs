@@ -47,7 +47,7 @@ pub(in super) fn whitelist_interface(providers: &[Provider], mut b: Builder) -> 
             for instance in &event_class.instances {
                 let fname = generate_func_name(provider, event_class, instance);
                 eprintln!("whitelisting: {}", fname);
-                b = b.whitelist_function(fname);
+                b = b.allowlist_function(fname);
             }
         }
     }
